@@ -8,6 +8,7 @@ function App() {
   let [trees, setTrees] = useState([]);
   let [gridSize, setGridSize] = useState(20);
   let [simSpeed, setSimSpeed] = useState(1);
+  let [density, setDensity] = useState(0.45);
 
   const running = useRef(null);
 
@@ -16,7 +17,7 @@ function App() {
     fetch("http://localhost:8000/simulations", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ dim: [gridSize, gridSize] })
+      body: JSON.stringify({ dim: [gridSize, gridSize], density: density })
     }).then(resp => resp.json())
     .then(data => {
       console.log(data);
@@ -33,7 +34,7 @@ function App() {
       .then(data => {
         setTrees(data["trees"]);
       });
-    }, 1000 / simSpeed);
+    }, simSpeed);
   };
 
   const handleStop = () => {
@@ -45,11 +46,19 @@ function App() {
   if (burning == 0)
     handleStop();
 
-  let offset = 10; //(500 - gridSize * 12) / 2;
+  let offset = 10;
 
-  // const handleGridSizeSliderChange = (newValue) => {
-  //   setGridSize(newValue);
-  // };
+  const handleGridSizeSliderChange = (newValue) => {
+    setGridSize(newValue);
+  }
+
+  const handleSimSpeedSliderChange = (newValue) => {
+    setSimSpeed(newValue);
+  }
+  
+  const handleDensitySliderChange = (newValue) => {
+    setDensity(newValue);
+  }
 
 
   return (
@@ -69,14 +78,21 @@ function App() {
           min={10} max={40} step={10}
           type='number' 
           value={gridSize} 
-          onChange={setGridSize}
+          onChange={handleGridSizeSliderChange}
         />
         <SliderField
           label="Simulation Speed" 
           min={1} max={10}
           type='number' 
           value={simSpeed} 
-          onChange={setSimSpeed}
+          onChange={handleSimSpeedSliderChange}
+        />
+        <SliderField 
+          label="Tree density" 
+          min={0.1} max={1} step={0.05} 
+          type='number' 
+          value={density} 
+          onChange={handleDensitySliderChange}
         />
       </div>
       <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" style={{backgroundColor:"white"}}>
