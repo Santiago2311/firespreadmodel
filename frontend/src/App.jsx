@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react'
 // import './App.css'
 import '@aws-amplify/ui-react/styles.css';
-import { Button } from "@aws-amplify/ui-react";
+import { Button, SliderField } from "@aws-amplify/ui-react";
 
 function App() {
   let [location, setLocation] = useState("");
   let [trees, setTrees] = useState([]);
-  let gridSize = 5;
+  let [gridSize, setGridSize] = useState(20);
+  let [simSpeed, setSimSpeed] = useState(1);
+
   const running = useRef(null);
 
   let setup = () => {
@@ -14,6 +16,7 @@ function App() {
     fetch("http://localhost:8000/simulations", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dim: [gridSize, gridSize] })
     }).then(resp => resp.json())
     .then(data => {
       console.log(data);
@@ -30,7 +33,7 @@ function App() {
       .then(data => {
         setTrees(data["trees"]);
       });
-    }, 500);
+    }, 1000 / simSpeed);
   };
 
   const handleStop = () => {
@@ -42,19 +45,39 @@ function App() {
   if (burning == 0)
     handleStop();
 
-  let offset = (500 - gridSize * 12) / 2;
+  let offset = 10; //(500 - gridSize * 12) / 2;
+
+  // const handleGridSizeSliderChange = (newValue) => {
+  //   setGridSize(newValue);
+  // };
+
+
   return (
     <>
       <div>
-        <Button variant={"contained"} onClick={setup}>
+        <Button variation="primary" colorTheme="success" onClick={setup}>
           Setup
         </Button>
-        <Button variant={"contained"} onClick={handleStart}>
+        <Button variation="primary" colorTheme="info" variant={"contained"} onClick={handleStart}>
           Start
         </Button>
-        <Button variant={"contained"} onClick={handleStop}>
+        <Button variation="primary" colorTheme="error" onClick={handleStop}>
           Stop
         </Button>
+        <SliderField
+          label="Grid size" 
+          min={10} max={40} step={10}
+          type='number' 
+          value={gridSize} 
+          onChange={setGridSize}
+        />
+        <SliderField
+          label="Simulation Speed" 
+          min={1} max={10}
+          type='number' 
+          value={simSpeed} 
+          onChange={setSimSpeed}
+        />
       </div>
       <svg width="500" height="500" xmlns="http://www.w3.org/2000/svg" style={{backgroundColor:"white"}}>
       {
